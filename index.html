@@ -848,11 +848,24 @@
             
             showVictory() {
                 const modal = document.getElementById('victoryModal');
+                const totalAttempts = this.attempts.length;
                 const totalAttributes = 12;
-                const accuracy = Math.round((this.correctAttributes.size / totalAttributes) * 100);
                 
-                document.getElementById('victoryAttempts').textContent = `${this.attempts.length} tentativa${this.attempts.length !== 1 ? 's' : ''}`;
-                document.getElementById('victoryAccuracy').textContent = `${accuracy}% de precisão`;
+                // Calcula a eficiência baseada no número de tentativas
+                // Considera perfeito = 1 tentativa (100%), e diminui conforme aumenta
+                let efficiency;
+                if (totalAttempts === 1) {
+                    efficiency = 100;
+                } else if (totalAttempts <= 3) {
+                    efficiency = Math.max(95 - (totalAttempts - 1) * 5, 85);
+                } else if (totalAttempts <= 6) {
+                    efficiency = Math.max(85 - (totalAttempts - 3) * 10, 55);
+                } else {
+                    efficiency = Math.max(55 - (totalAttempts - 6) * 5, 10);
+                }
+                
+                document.getElementById('victoryAttempts').textContent = `${totalAttempts} tentativa${totalAttempts !== 1 ? 's' : ''}`;
+                document.getElementById('victoryAccuracy').textContent = `${efficiency}% de eficiência`;
                 
                 // Remove qualquer estilo inline que possa estar sobrescrevendo
                 modal.style.background = '';
