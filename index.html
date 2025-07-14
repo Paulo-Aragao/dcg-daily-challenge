@@ -566,11 +566,7 @@
                 <div class="victory-stats">
                     <div class="stat" id="victoryAttempts"></div>
                     <div class="stat" id="victoryAccuracy"></div>
-                </div>
-                
-                <div class="revealed-card">
-                    <img id="victoryCardImage" src="" alt="Carta revelada" style="box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);">
-                    <div id="victoryCardName" style="margin-top: 10px; font-weight: bold; text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8); font-size: 1.1em;"></div>
+                    <div class="stat" style="margin-top: 15px; font-size: 0.9em; opacity: 0.8;">Digimon Daily Challenge</div>
                 </div>
                 
                 <button class="close-victory" onclick="closeVictory()">Continuar</button>
@@ -857,8 +853,6 @@
                 
                 document.getElementById('victoryAttempts').textContent = `${this.attempts.length} tentativa${this.attempts.length !== 1 ? 's' : ''}`;
                 document.getElementById('victoryAccuracy').textContent = `${accuracy}% de precisão`;
-                document.getElementById('victoryCardImage').src = `https://images.digimoncard.io/images/cards/${this.targetCard.id}.jpg`;
-                document.getElementById('victoryCardName').textContent = `${this.targetCard.name} (${this.targetCard.id})`;
                 
                 // Remove qualquer estilo inline que possa estar sobrescrevendo
                 modal.style.background = '';
