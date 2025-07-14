@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Digimon TCG Termo</title>
+    <title>Digimon Daily Challenge</title>
+    <link rel="icon" type="image/png" href="img/icon.png">
     <style>
         * {
             margin: 0;
@@ -318,7 +319,7 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(0,0,0,0.8);
+            background: url('img/bgwin.png') center/cover no-repeat, rgba(0,0,0,0.8);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -327,7 +328,9 @@
         }
         
         .victory-content {
-            background: linear-gradient(135deg, #4CAF50, #45a049);
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
             color: white;
             padding: 30px;
             border-radius: 20px;
@@ -335,6 +338,20 @@
             max-width: 350px;
             width: 100%;
             animation: victoryPop 0.6s ease-out;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+        }
+        
+        .victory-content h2 {
+            font-size: 2em;
+            margin-bottom: 15px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+            color: #FFD700;
+        }
+        
+        .victory-content p {
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+            font-size: 1.1em;
         }
         
         @keyframes victoryPop {
@@ -346,18 +363,24 @@
         .victory-content h2 {
             font-size: 2em;
             margin-bottom: 15px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+            color: #FFD700;
         }
         
         .victory-stats {
-            background: rgba(255,255,255,0.1);
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(5px);
             border-radius: 10px;
             padding: 15px;
             margin: 20px 0;
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
         
         .victory-stats .stat {
             font-size: 1.1em;
             margin: 5px 0;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+            font-weight: 600;
         }
         
         .revealed-card {
@@ -372,18 +395,24 @@
         }
         
         .close-victory {
-            background: rgba(255,255,255,0.2);
-            border: none;
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
             color: white;
-            padding: 10px 20px;
+            padding: 12px 24px;
             border-radius: 8px;
             font-size: 1em;
+            font-weight: 600;
             cursor: pointer;
             margin-top: 20px;
+            transition: all 0.3s ease;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
         }
         
         .close-victory:hover {
-            background: rgba(255,255,255,0.3);
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
         }
         
         .error {
@@ -516,7 +545,7 @@
                         </div>
                         <div style="display: flex; align-items: center; gap: 4px;">
                             <div style="width: 16px; height: 16px; background: #9E9E9E; border-radius: 3px;"></div>
-                            <span>N/A</span>
+                            <span>Indiferente</span>
                         </div>
                         <div style="display: flex; align-items: center; gap: 4px;">
                             <span style="font-weight: 600;">↑↓</span>
@@ -532,7 +561,7 @@
         <div class="victory-modal" id="victoryModal" style="display: none;">
             <div class="victory-content">
                 <h2>🎉 Parabéns!</h2>
-                <p>Você descobriu a carta do dia!</p>
+                <p style="text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8); font-size: 1.1em;">Você descobriu a carta do dia!</p>
                 
                 <div class="victory-stats">
                     <div class="stat" id="victoryAttempts"></div>
@@ -540,8 +569,8 @@
                 </div>
                 
                 <div class="revealed-card">
-                    <img id="victoryCardImage" src="" alt="Carta revelada">
-                    <div id="victoryCardName" style="margin-top: 10px; font-weight: bold;"></div>
+                    <img id="victoryCardImage" src="" alt="Carta revelada" style="box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);">
+                    <div id="victoryCardName" style="margin-top: 10px; font-weight: bold; text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8); font-size: 1.1em;"></div>
                 </div>
                 
                 <button class="close-victory" onclick="closeVictory()">Continuar</button>
@@ -831,7 +860,9 @@
                 document.getElementById('victoryCardImage').src = `https://images.digimoncard.io/images/cards/${this.targetCard.id}.jpg`;
                 document.getElementById('victoryCardName').textContent = `${this.targetCard.name} (${this.targetCard.id})`;
                 
-                modal.style.display = 'flex';
+                // Remove qualquer estilo inline que possa estar sobrescrevendo
+                modal.style.background = '';
+                modal.style.cssText = 'display: flex !important';
                 document.getElementById('searchContainer').style.display = 'none';
             }
             
