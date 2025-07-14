@@ -79,8 +79,16 @@ class DigimonTermoGame {
                 e.preventDefault();
                 const firstSuggestion = suggestions.querySelector('.suggestion-item');
                 if (firstSuggestion) {
-                    this.selectCard(firstSuggestion.dataset.cardId);
+                    const cardId = firstSuggestion.dataset.cardId;
+                    this.selectCard(cardId);
                 }
+            }
+        });
+        
+        // Fechar sugestões ao clicar fora
+        document.addEventListener('click', (e) => {
+            if (!searchBox.contains(e.target) && !suggestions.contains(e.target)) {
+                suggestions.style.display = 'none';
             }
         });
     }
@@ -95,7 +103,7 @@ class DigimonTermoGame {
         
         const filtered = this.allCards.filter(card => 
             card.name.toLowerCase().includes(query.toLowerCase())
-        ).slice(0, 8);
+        ).slice(0, 15); // Aumentou para 15 resultados
         
         suggestions.innerHTML = '';
         
@@ -103,7 +111,16 @@ class DigimonTermoGame {
             filtered.forEach(card => {
                 const div = document.createElement('div');
                 div.className = 'suggestion-item';
-                div.textContent = `${card.name} (${card.cardnumber})`;
+                div.innerHTML = `
+                    <img src="https://images.digimoncard.io/images/cards/${card.cardnumber}.jpg" 
+                         alt="${card.name}" 
+                         class="suggestion-image"
+                         onerror="this.style.display='none'">
+                    <div class="suggestion-text">
+                        <div class="suggestion-name">${card.name}</div>
+                        <div class="suggestion-id">${card.cardnumber}</div>
+                    </div>
+                `;
                 div.dataset.cardId = card.cardnumber;
                 div.addEventListener('click', () => this.selectCard(card.cardnumber));
                 suggestions.appendChild(div);
@@ -273,20 +290,9 @@ class DigimonTermoGame {
         const modal = document.getElementById('victoryModal');
         const totalAttempts = this.attempts.length;
         
-        // Calcula a eficiência baseada no número de tentativas
-        let efficiency;
-        if (totalAttempts === 1) {
-            efficiency = 100;
-        } else if (totalAttempts <= 3) {
-            efficiency = Math.max(95 - (totalAttempts - 1) * 5, 85);
-        } else if (totalAttempts <= 6) {
-            efficiency = Math.max(85 - (totalAttempts - 3) * 10, 55);
-        } else {
-            efficiency = Math.max(55 - (totalAttempts - 6) * 5, 10);
-        }
-        
         document.getElementById('victoryAttempts').textContent = `${totalAttempts} tentativa${totalAttempts !== 1 ? 's' : ''}`;
-        document.getElementById('victoryAccuracy').textContent = `${efficiency}% de eficiência`;
+        // Remove a linha de accuracy completamente
+        document.getElementById('victoryAccuracy').style.display = 'none';
         
         // Remove qualquer estilo inline que possa estar sobrescrevendo
         modal.style.background = '';
