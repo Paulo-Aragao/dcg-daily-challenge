@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Digimon TCG Termo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+            overflow-x: hidden;
+        }
+        
+        .app {
+            max-width: 100vw;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .header {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            padding: 15px 20px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .header h1 {
+            color: white;
+            font-size: 1.5em;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+        
+        .header .stats {
+            color: rgba(255,255,255,0.9);
+            font-size: 0.9em;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+        
+        .main-content {
+            flex: 1;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            max-width: 100%;
+        }
+        
+        .mystery-section {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            color: white;
+        }
+        
+        .mystery-layout {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .mystery-image {
+            width: 120px;
+            height: 168px;
+            border-radius: 8px;
+            background: linear-gradient(45deg, #333, #555);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+        
+        .mystery-image::before {
+            content: '?';
+            font-size: 3em;
+            color: rgba(255,255,255,0.3);
+            position: absolute;
+        }
+        
+        .mystery-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 8px;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+        
+        .mystery-image.revealed img {
+            opacity: 1;
+        }
+        
+        .mystery-image.revealed::before {
+            opacity: 0;
+        }
+        
+        .mystery-info {
+            flex: 1;
+            text-align: left;
+        }
+        
+        .mystery-info h3 {
+            font-size: 1.1em;
+            margin-bottom: 10px;
+        }
+        
+        .correct-attributes {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            max-height: 120px;
+            overflow-y: auto;
+        }
+        
+        .correct-item {
+            background: #4CAF50;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.75em;
+            white-space: nowrap;
+        }
+        
+        .search-container {
+            background: white;
+            border-radius: 15px;
+            padding: 15px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        
+        .search-box {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+        
+        .search-box:focus {
+            border-color: #667eea;
+        }
+        
+        .suggestions {
+            max-height: 150px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background: white;
+            margin-top: 8px;
+            display: none;
+        }
+        
+        .suggestion-item {
+            padding: 10px;
+            cursor: pointer;
+            border-bottom: 1px solid #eee;
+            font-size: 0.9em;
+        }
+        
+        .suggestion-item:hover {
+            background-color: #f0f0f0;
+        }
+        
+        .suggestion-item:last-child {
+            border-bottom: none;
+        }
+        
+        .attempts-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-height: 50vh;
+            overflow-y: auto;
+            padding-right: 5px;
+        }
+        
+        .attempt {
+            background: white;
+            border-radius: 12px;
+            padding: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .attempt-image {
+            width: 60px;
+            height: 84px;
+            border-radius: 6px;
+            object-fit: cover;
+            flex-shrink: 0;
+        }
+        
+        .attempt-content {
+            flex: 1;
+            min-width: 0;
+        }
+        
+        .attempt-header {
+            font-weight: 600;
+            font-size: 0.9em;
+            margin-bottom: 8px;
+            color: #333;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .attributes {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 4px;
+        }
+        
+        .attribute {
+            padding: 4px 2px;
+            border-radius: 4px;
+            text-align: center;
+            font-weight: 600;
+            color: white;
+            position: relative;
+            font-size: 0.7em;
+            min-height: 35px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        
+        .attribute.correct {
+            background: #4CAF50;
+        }
+        
+        .attribute.wrong {
+            background: #f44336;
+        }
+        
+        .attribute.partial {
+            background: #FF9800;
+        }
+        
+        .attribute .value {
+            font-size: 0.85em;
+            margin-top: 2px;
+        }
+        
+        .attribute .arrow {
+            position: absolute;
+            right: 2px;
+            top: 2px;
+            font-size: 0.8em;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px 20px;
+            color: white;
+        }
+        
+        .spinner {
+            border: 3px solid rgba(255,255,255,0.3);
+            border-top: 3px solid white;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .victory-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 20px;
+        }
+        
+        .victory-content {
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+            padding: 30px;
+            border-radius: 20px;
+            text-align: center;
+            max-width: 350px;
+            width: 100%;
+            animation: victoryPop 0.6s ease-out;
+        }
+        
+        @keyframes victoryPop {
+            0% { transform: scale(0.5); opacity: 0; }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        
+        .victory-content h2 {
+            font-size: 2em;
+            margin-bottom: 15px;
+        }
+        
+        .victory-stats {
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        
+        .victory-stats .stat {
+            font-size: 1.1em;
+            margin: 5px 0;
+        }
+        
+        .revealed-card {
+            margin-top: 20px;
+        }
+        
+        .revealed-card img {
+            width: 150px;
+            height: 210px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+        
+        .close-victory {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 1em;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+        
+        .close-victory:hover {
+            background: rgba(255,255,255,0.3);
+        }
+        
+        .error {
+            background: #f44336;
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-size: 0.9em;
+        }
+        
+        /* Scrollbar personalizada */
+        .attempts-container::-webkit-scrollbar,
+        .suggestions::-webkit-scrollbar,
+        .correct-attributes::-webkit-scrollbar {
+            width: 4px;
+        }
+        
+        .attempts-container::-webkit-scrollbar-track,
+        .suggestions::-webkit-scrollbar-track,
+        .correct-attributes::-webkit-scrollbar-track {
+            background: rgba(255,255,255,0.1);
+            border-radius: 2px;
+        }
+        
+        .attempts-container::-webkit-scrollbar-thumb,
+        .suggestions::-webkit-scrollbar-thumb,
+        .correct-attributes::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,0.3);
+            border-radius: 2px;
+        }
+        
+        /* Ajustes para telas muito pequenas */
+        @media (max-width: 380px) {
+            .attributes {
+                grid-template-columns: repeat(3, 1fr);
+            }
+            
+            .mystery-layout {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .mystery-info {
+                text-align: center;
+            }
+        }
+        
+        /* Ajustes para landscape em mobile */
+        @media (orientation: landscape) and (max-height: 500px) {
+            .header {
+                padding: 10px 20px;
+            }
+            
+            .header h1 {
+                font-size: 1.2em;
+                margin-bottom: 2px;
+            }
+            
+            .main-content {
+                padding: 15px;
+                gap: 15px;
+            }
+            
+            .mystery-section {
+                padding: 15px;
+            }
+            
+            .mystery-image {
+                width: 80px;
+                height: 112px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app">
+        <div class="header">
+            <h1>🎮 Digimon TCG Termo</h1>
+            <div class="stats">
+                <span id="attemptCount">Tentativas: 0</span>
+                <span>•</span>
+                <span id="correctCount">Corretos: 0/12</span>
+            </div>
+        </div>
+        
+        <div class="main-content">
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>Carregando cartas...</p>
+            </div>
+            
+            <div class="error" id="error" style="display: none;"></div>
+            
+            <div class="mystery-section" id="mysterySection" style="display: none;">
+                <div class="mystery-layout">
+                    <div class="mystery-image" id="mysteryImage">
+                        <img id="mysteryImg" src="" alt="Carta Misteriosa">
+                    </div>
+                    <div class="mystery-info">
+                        <h3>Carta Misteriosa</h3>
+                        <div class="correct-attributes" id="correctAttributes">
+                            <div style="color: rgba(255,255,255,0.7); font-size: 0.8em;">Acerte os atributos para revelar pistas!</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="search-container" id="searchContainer" style="display: none;">
+                <input type="text" class="search-box" id="searchBox" placeholder="Digite o nome da carta Digimon...">
+                <div class="suggestions" id="suggestions"></div>
+            </div>
+            
+            <div class="attempts-container" id="attemptsContainer"></div>
+        </div>
+        
+        <div class="victory-modal" id="victoryModal" style="display: none;">
+            <div class="victory-content">
+                <h2>🎉 Parabéns!</h2>
+                <p>Você descobriu a carta do dia!</p>
+                
+                <div class="victory-stats">
+                    <div class="stat" id="victoryAttempts"></div>
+                    <div class="stat" id="victoryAccuracy"></div>
+                </div>
+                
+                <div class="revealed-card">
+                    <img id="victoryCardImage" src="" alt="Carta revelada">
+                    <div id="victoryCardName" style="margin-top: 10px; font-weight: bold;"></div>
+                </div>
+                
+                <button class="close-victory" onclick="closeVictory()">Continuar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class DigimonTermoGame {
+            constructor() {
+                this.allCards = [];
+                this.targetCard = null;
+                this.attempts = [];
+                this.gameWon = false;
+                this.correctAttributes = new Set();
+                
+                this.init();
+            }
+            
+            async init() {
+                try {
+                    await this.loadAllCards();
+                    this.selectDailyCard();
+                    await this.loadTargetCard();
+                    this.setupEventListeners();
+                    this.showGame();
+                } catch (error) {
+                    this.showError('Erro ao carregar o jogo. Tente novamente.');
+                    console.error('Erro na inicialização:', error);
+                }
+            }
+            
+            async loadAllCards() {
+                try {
+                    const response = await fetch('https://digimoncard.io/api-public/getAllCards.php?sort=name&series=Digimon Card Game&sortdirection=asc');
+                    if (!response.ok) throw new Error('Erro ao carregar cartas');
+                    this.allCards = await response.json();
+                } catch (error) {
+                    throw new Error('Não foi possível carregar as cartas');
+                }
+            }
+            
+            selectDailyCard() {
+                const today = new Date().toDateString();
+                const seed = this.hashCode(today);
+                const randomIndex = Math.abs(seed) % this.allCards.length;
+                this.dailyCardId = this.allCards[randomIndex].cardnumber;
+            }
+            
+            hashCode(str) {
+                let hash = 0;
+                for (let i = 0; i < str.length; i++) {
+                    const char = str.charCodeAt(i);
+                    hash = ((hash << 5) - hash) + char;
+                    hash = hash & hash;
+                }
+                return hash;
+            }
+            
+            async loadTargetCard() {
+                try {
+                    const response = await fetch(`https://digimoncard.io/api-public/search.php?card=${this.dailyCardId}`);
+                    if (!response.ok) throw new Error('Erro ao carregar carta alvo');
+                    const data = await response.json();
+                    this.targetCard = data[0];
+                    this.setupMysteryCard();
+                } catch (error) {
+                    throw new Error('Não foi possível carregar a carta do dia');
+                }
+            }
+            
+            setupMysteryCard() {
+                const mysteryImg = document.getElementById('mysteryImg');
+                mysteryImg.src = `https://images.digimoncard.io/images/cards/${this.targetCard.id}.jpg`;
+            }
+            
+            setupEventListeners() {
+                const searchBox = document.getElementById('searchBox');
+                const suggestions = document.getElementById('suggestions');
+                
+                searchBox.addEventListener('input', (e) => {
+                    this.handleSearch(e.target.value);
+                });
+                
+                searchBox.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        const firstSuggestion = suggestions.querySelector('.suggestion-item');
+                        if (firstSuggestion) {
+                            this.selectCard(firstSuggestion.dataset.cardId);
+                        }
+                    }
+                });
+            }
+            
+            handleSearch(query) {
+                const suggestions = document.getElementById('suggestions');
+                
+                if (query.length < 2) {
+                    suggestions.style.display = 'none';
+                    return;
+                }
+                
+                const filtered = this.allCards.filter(card => 
+                    card.name.toLowerCase().includes(query.toLowerCase())
+                ).slice(0, 8);
+                
+                suggestions.innerHTML = '';
+                
+                if (filtered.length > 0) {
+                    filtered.forEach(card => {
+                        const div = document.createElement('div');
+                        div.className = 'suggestion-item';
+                        div.textContent = `${card.name} (${card.cardnumber})`;
+                        div.dataset.cardId = card.cardnumber;
+                        div.addEventListener('click', () => this.selectCard(card.cardnumber));
+                        suggestions.appendChild(div);
+                    });
+                    suggestions.style.display = 'block';
+                } else {
+                    suggestions.style.display = 'none';
+                }
+            }
+            
+            async selectCard(cardId) {
+                if (this.gameWon) return;
+                
+                try {
+                    const response = await fetch(`https://digimoncard.io/api-public/search.php?card=${cardId}`);
+                    if (!response.ok) throw new Error('Erro ao buscar carta');
+                    const data = await response.json();
+                    const selectedCard = data[0];
+                    
+                    this.makeAttempt(selectedCard);
+                    
+                    document.getElementById('searchBox').value = '';
+                    document.getElementById('suggestions').style.display = 'none';
+                    
+                } catch (error) {
+                    this.showError('Erro ao buscar carta. Tente novamente.');
+                }
+            }
+            
+            makeAttempt(card) {
+                this.attempts.unshift(card); // Adiciona no início para ordem reversa
+                this.updateStats();
+                
+                const comparison = this.compareCards(card, this.targetCard);
+                this.displayAttempt(card, comparison);
+                this.updateCorrectAttributes(comparison);
+                
+                if (card.id === this.targetCard.id) {
+                    this.gameWon = true;
+                    this.revealMysteryCard();
+                    setTimeout(() => this.showVictory(), 1000);
+                }
+            }
+            
+            compareCards(guess, target) {
+                const comparison = {};
+                
+                const attributes = [
+                    { key: 'name', label: 'Name', type: 'string' },
+                    { key: 'level', label: 'Level', type: 'number' },
+                    { key: 'play_cost', label: 'Cost', type: 'number' },
+                    { key: 'evolution_cost', label: 'Evo', type: 'number' },
+                    { key: 'color', label: 'Color1', type: 'string' },
+                    { key: 'color2', label: 'Color2', type: 'string' },
+                    { key: 'digi_type', label: 'Type1', type: 'string' },
+                    { key: 'digi_type2', label: 'Type2', type: 'string' },
+                    { key: 'dp', label: 'DP', type: 'number' },
+                    { key: 'attribute', label: 'Attr', type: 'string' },
+                    { key: 'rarity', label: 'Rarity', type: 'string' },
+                    { key: 'form', label: 'Form', type: 'string' }
+                ];
+                
+                attributes.forEach(attr => {
+                    const guessValue = guess[attr.key];
+                    const targetValue = target[attr.key];
+                    
+                    if (guessValue === targetValue && guessValue !== null && guessValue !== '') {
+                        comparison[attr.key] = { status: 'correct', value: guessValue, label: attr.label };
+                    } else if (attr.type === 'number' && guessValue !== null && targetValue !== null) {
+                        const arrow = guessValue < targetValue ? '↑' : '↓';
+                        comparison[attr.key] = { 
+                            status: 'wrong', 
+                            value: guessValue, 
+                            arrow: arrow,
+                            label: attr.label 
+                        };
+                    } else {
+                        comparison[attr.key] = { 
+                            status: 'wrong', 
+                            value: guessValue || '-', 
+                            label: attr.label 
+                        };
+                    }
+                });
+                
+                return comparison;
+            }
+            
+            displayAttempt(card, comparison) {
+                const container = document.getElementById('attemptsContainer');
+                const attemptDiv = document.createElement('div');
+                attemptDiv.className = 'attempt';
+                
+                attemptDiv.innerHTML = `
+                    <img src="https://images.digimoncard.io/images/cards/${card.id}.jpg" alt="${card.name}" class="attempt-image" onerror="this.style.display='none'">
+                    <div class="attempt-content">
+                        <div class="attempt-header">${card.name} (${card.id})</div>
+                        <div class="attributes">
+                            ${Object.values(comparison).map(attr => `
+                                <div class="attribute ${attr.status}">
+                                    <div style="font-size: 0.6em;">${attr.label}</div>
+                                    <div class="value">${this.truncateValue(attr.value)}${attr.arrow ? `<span class="arrow">${attr.arrow}</span>` : ''}</div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+                
+                container.prepend(attemptDiv); // Adiciona no topo
+                attemptDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+            
+            truncateValue(value) {
+                if (typeof value === 'string' && value.length > 8) {
+                    return value.substring(0, 6) + '..';
+                }
+                return value;
+            }
+            
+            updateCorrectAttributes(comparison) {
+                Object.entries(comparison).forEach(([key, attr]) => {
+                    if (attr.status === 'correct' && attr.value !== '-') {
+                        this.correctAttributes.add(`${attr.label}: ${attr.value}`);
+                    }
+                });
+                
+                this.displayCorrectAttributes();
+            }
+            
+            displayCorrectAttributes() {
+                const container = document.getElementById('correctAttributes');
+                
+                if (this.correctAttributes.size === 0) {
+                    container.innerHTML = '<div style="color: rgba(255,255,255,0.7); font-size: 0.8em;">Acerte os atributos para revelar pistas!</div>';
+                    return;
+                }
+                
+                container.innerHTML = Array.from(this.correctAttributes)
+                    .map(attr => `<div class="correct-item">${attr}</div>`)
+                    .join('');
+            }
+            
+            revealMysteryCard() {
+                const mysteryImage = document.getElementById('mysteryImage');
+                mysteryImage.classList.add('revealed');
+            }
+            
+            updateStats() {
+                document.getElementById('attemptCount').textContent = `Tentativas: ${this.attempts.length}`;
+                document.getElementById('correctCount').textContent = `Corretos: ${this.correctAttributes.size}/12`;
+            }
+            
+            showVictory() {
+                const modal = document.getElementById('victoryModal');
+                const totalAttributes = 12;
+                const accuracy = Math.round((this.correctAttributes.size / totalAttributes) * 100);
+                
+                document.getElementById('victoryAttempts').textContent = `${this.attempts.length} tentativa${this.attempts.length !== 1 ? 's' : ''}`;
+                document.getElementById('victoryAccuracy').textContent = `${accuracy}% de precisão`;
+                document.getElementById('victoryCardImage').src = `https://images.digimoncard.io/images/cards/${this.targetCard.id}.jpg`;
+                document.getElementById('victoryCardName').textContent = `${this.targetCard.name} (${this.targetCard.id})`;
+                
+                modal.style.display = 'flex';
+                document.getElementById('searchContainer').style.display = 'none';
+            }
+            
+            showGame() {
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('mysterySection').style.display = 'block';
+                document.getElementById('searchContainer').style.display = 'block';
+            }
+            
+            showError(message) {
+                const errorDiv = document.getElementById('error');
+                errorDiv.textContent = message;
+                errorDiv.style.display = 'block';
+                document.getElementById('loading').style.display = 'none';
+            }
+        }
+        
+        function closeVictory() {
+            document.getElementById('victoryModal').style.display = 'none';
+        }
+        
+        // Inicializar o jogo quando a página carregar
+        document.addEventListener('DOMContentLoaded', () => {
+            new DigimonTermoGame();
+        });
+        
+        // Prevenir zoom no iOS quando focar inputs
+        document.addEventListener('touchstart', function(e) {
+            if (e.touches.length > 1) {
+                e.preventDefault();
+            }
+        });
+    </script>
+</body>
+</html>
