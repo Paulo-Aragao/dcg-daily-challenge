@@ -179,17 +179,24 @@ class DigimonTermoGame {
             { key: 'digi_type2', label: 'Type2', type: 'string' },
             { key: 'dp', label: 'DP', type: 'number' },
             { key: 'attribute', label: 'Attr', type: 'string' },
-            { key: 'rarity', label: 'Rarity', type: 'string' },
+            { key: 'rarity', label: 'Rarity', type: 'string', normalize: true },
             { key: 'form', label: 'Form', type: 'string' }
         ];
         
         attributes.forEach(attr => {
-            const guessValue = guess[attr.key];
-            const targetValue = target[attr.key];
+            let guessValue = guess[attr.key];
+            let targetValue = target[attr.key];
+            
+            // Normaliza rarity para uppercase
+            if (attr.normalize) {
+                guessValue = guessValue ? guessValue.toUpperCase() : guessValue;
+                targetValue = targetValue ? targetValue.toUpperCase() : targetValue;
+            }
             
             // Se acertou a carta, todos os atributos ficam verdes
             if (guess.id === target.id) {
-                comparison[attr.key] = { status: 'correct', value: guessValue || '-', label: attr.label };
+                const displayValue = attr.normalize && guessValue ? guessValue : (guessValue || '-');
+                comparison[attr.key] = { status: 'correct', value: displayValue, label: attr.label };
             }
             // Se ambos são nulos/vazios, considera neutro
             else if ((!guessValue || guessValue === '') && (!targetValue || targetValue === '')) {
@@ -197,7 +204,8 @@ class DigimonTermoGame {
             }
             // Se valores são iguais e não nulos
             else if (guessValue === targetValue && guessValue !== null && guessValue !== '') {
-                comparison[attr.key] = { status: 'correct', value: guessValue, label: attr.label };
+                const displayValue = attr.normalize && guessValue ? guessValue : guessValue;
+                comparison[attr.key] = { status: 'correct', value: displayValue, label: attr.label };
             }
             // Para números, mostra setas
             else if (attr.type === 'number' && guessValue !== null && targetValue !== null) {
@@ -211,9 +219,10 @@ class DigimonTermoGame {
             }
             // Outros casos incorretos
             else {
+                const displayValue = attr.normalize && guessValue ? guessValue : (guessValue || '-');
                 comparison[attr.key] = { 
                     status: 'wrong', 
-                    value: guessValue || '-', 
+                    value: displayValue, 
                     label: attr.label 
                 };
             }
